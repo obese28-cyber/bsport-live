@@ -1,0 +1,12 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+.env
+.env.*
+!.env.example
+backend/node_modules/
+backend/.env
+.DS_Store
