@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const total = 35;
   const sections = [
     { selector: ".hero", offset: 0 },
@@ -20,7 +20,7 @@
       const image = new Image();
       image.onload = () => {
         element.style.backgroundImage =
-          `linear-gradient(90deg, rgba(3,10,25,.90), rgba(5,15,35,.65)), url("${url}")`;
+          `linear-gradient(90deg, rgba(3,10,25,.35), rgba(5,15,35,.15)), url("${url}")`;
         element.style.backgroundSize = "cover";
         element.style.backgroundPosition = "center";
       };
