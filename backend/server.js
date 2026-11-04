@@ -9,7 +9,7 @@ const isoDay=(d)=>d.toISOString().slice(0,10);
 const json=(res,status,obj)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'same-origin'});res.end(JSON.stringify(obj));};
 async function proxy(res,kind,date){
  if(!KEY)return json(res,503,{error:'SPORTAPI_KEY is not configured on the server.'});
- const target=kind==='football'?`/fixtures/date/${date}`:kind==='basketball'?`/basketball/games/date/${date}`:'/standings/24';
+ const target=kind==='football'?`/fixtures/date/${date}`:kind==='basketball'?`/basketball/games/date/${date}?tz=America/Los_Angeles&league=nba`:'/standings/24';
  const id=`${kind}:${date}`;const hit=cache.get(id);if(hit&&Date.now()-hit.at<(ttl[kind]||60000))return json(res,200,{...hit.value,cached:true});
  try{const upstream=await fetch('https://sportapi.ai/api'+target,{headers:{'X-Api-Key':KEY},signal:AbortSignal.timeout(12000)});
  const body=await upstream.json();if(!upstream.ok||body.success===false)return json(res,upstream.status,{error:body.error||`SportAPI returned ${upstream.status}`,scope:body.scope||null});
