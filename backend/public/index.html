@@ -98,8 +98,14 @@
         }
         .animate-ticker-fast {
             display: flex;
-            width: 200%;
-            animation: tickerSlow 22s linear infinite;
+            width: max-content;
+            min-width: 100%;
+            white-space: nowrap;
+            animation: tickerClean 28s linear infinite;
+        }
+        @keyframes tickerClean {
+            from { transform: translateX(55%); }
+            to { transform: translateX(-100%); }
         }
 
         /* Highlight Alert Banner Animation */
@@ -294,9 +300,19 @@
   }
   window.refreshScores=refreshScores;
   function updateTicker(){
-    const xs=allMatches().slice(0,5);
-    const text=xs.length?xs.map(m=>`${m.league}: ${m.home} ${m.hs??'–'} - ${m.as??'–'} ${m.away} (${m.status})`).join('  ✦  '):'BSPORT LIVE · Awaiting sports feed · Sports history and standings';
-    $('liveTicker').textContent=text+'  ✦  '+text;
+    // Prioritize meaningful action; never display missing scores as "– - –".
+    const matches=allMatches();
+    const hasScore=m=>m.hs!==null&&m.hs!==undefined&&m.as!==null&&m.as!==undefined;
+    const active=matches.filter(m=>m.live);
+    const finished=matches.filter(m=>!m.live&&hasScore(m));
+    const upcoming=matches.filter(m=>!m.live&&!hasScore(m));
+    const picks=[...active,...finished,...upcoming].slice(0,3);
+    const items=picks.map(m=>{
+      const label=m.live?'LIVE':hasScore(m)?'RESULT':'UPCOMING';
+      const matchup=hasScore(m)?`${m.home} ${m.hs}–${m.as} ${m.away}`:`${m.home} vs ${m.away}`;
+      return `${label} · ${m.league} · ${matchup}`;
+    });
+    $('liveTicker').textContent=items.length?items.join('     ✦     '):'BSPORT LIVE · Waiting for verified sports updates';
   }
   function renderCurrentView(){
     const tabs=document.querySelectorAll('.tab-btn');
