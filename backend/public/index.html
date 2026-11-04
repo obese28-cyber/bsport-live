@@ -223,7 +223,7 @@
        style="width:100%;height:100%;object-fit:cover;">
 </div>
 <!-- FEATURED MATCH WITH STAR PLAYER ACTION CARDS -->
-<div class="glass-card rounded-2xl p-3 border border-cyan-500/30 shadow-lg relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-blue-950/40"><div class="flex items-center justify-between text-[10px] font-black tracking-wider mb-3"><span class="text-cyan-300">★ FEATURED MATCH · VERIFIED FEED</span><span class="text-gray-300" id="featuredStatus">CONNECTING</span></div><div class="text-center text-sm font-bold text-white py-3" id="featuredMatch">Loading real match data…</div><div class="text-center text-[10px] text-gray-300 pt-2" id="featuredMeta">SportAPI.ai · results subject to provider updates</div></div>
+<div class="glass-card rounded-2xl p-3 border border-cyan-500/30 shadow-lg relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-blue-950/40"><div class="flex items-center justify-between text-[10px] font-black tracking-wider mb-3"><span class="text-cyan-300">★ MATCH CENTER · SPORTAPI FEED</span><span class="text-gray-300" id="featuredStatus">CONNECTING</span></div><div class="text-center text-sm font-bold text-white py-3" id="featuredMatch">Loading real match data…</div><div class="text-center text-[10px] text-gray-300 pt-2" id="featuredMeta">SportAPI.ai · results subject to provider updates</div></div>
 <!-- ROTATION PROGRESS BAR & SELECTOR -->
 <div class="space-y-1 pt-1">
 <div class="flex items-center justify-between text-[10px] font-bold text-gray-400">
@@ -290,11 +290,61 @@
   }
   function fixture(m,i){const bg=backgrounds[(i*3+photoIndex)%backgrounds.length];return `<div class="glass-card rounded-2xl p-3 mb-2 relative overflow-hidden broadcast-photo" style="background-image:url('${bg}')"><div class="text-[10px] flex justify-between gap-2 text-cyan-200 font-bold mb-2"><span>${esc(m.league)}</span><span class="${m.live?'text-emerald-300':'text-gray-200'}">${m.live?'● LIVE ':''}${esc(m.status)}</span></div><div class="flex items-center justify-between gap-2"><div class="w-[36%] text-sm font-extrabold leading-tight">${esc(m.home)}</div><div class="broadcast-score text-center whitespace-nowrap">${score(m.hs)} <span class="text-cyan-300">:</span> ${score(m.as)}</div><div class="w-[36%] text-sm font-extrabold text-right leading-tight">${esc(m.away)}</div></div><div class="text-[9px] text-gray-200 mt-2">${esc(m.meta)}</div></div>`;}
   function updateFeatured(){
-    const matches=allMatches(); const m=matches[featuredIndex%Math.max(matches.length,1)];
-    if(!m){$('featuredStatus').textContent='NO GAMES';$('featuredMatch').textContent='No matches available for this date';return;}
-    $('featuredStatus').textContent=m.live?'● LIVE':m.status;
-    $('featuredMatch').innerHTML=`<div class="text-[10px] text-cyan-300 uppercase mb-2">${esc(m.league)}</div><div class="flex justify-between items-center gap-3"><span class="w-2/5 text-left">${esc(m.home)}</span><span class="broadcast-score whitespace-nowrap">${score(m.hs)} : ${score(m.as)}</span><span class="w-2/5 text-right">${esc(m.away)}</span></div>`;
-    $('featuredMeta').textContent=m.meta||'Scores supplied by SportAPI.ai';
+    const games = allMatches();
+
+    const hasScore = m =>
+      m.hs !== null && m.hs !== undefined &&
+      m.as !== null && m.as !== undefined;
+
+    const isLive = m =>
+      m.live || /live|in.progress|half.time/i.test(String(m.status));
+
+    const live = games.filter(isLive);
+
+    const finished = games.filter(m =>
+      !isLive(m) && hasScore(m) &&
+      !/scheduled|not.started/i.test(String(m.status))
+    );
+
+    const upcoming = games.filter(m =>
+      !isLive(m) && !finished.includes(m)
+    );
+
+    const featured = [...live, ...finished, ...upcoming];
+    const m = featured[featuredIndex % Math.max(featured.length,1)];
+
+    if (!m) {
+      $('featuredStatus').textContent = 'NO MATCHES';
+      $('featuredMatch').textContent = 'No matches available';
+      return;
+    }
+
+    const liveNow = isLive(m);
+    const completed = !liveNow && finished.includes(m);
+
+    $('featuredStatus').textContent =
+      liveNow ? '● LIVE' : completed ? 'FINAL' : 'UPCOMING';
+
+    const displayScore = (liveNow || completed) && hasScore(m)
+      ? `${esc(m.hs)} : ${esc(m.as)}`
+      : 'VS';
+
+    $('featuredMatch').innerHTML = `
+      <div class="text-[10px] text-cyan-300 uppercase mb-2">
+        ${esc(m.league)}
+      </div>
+      <div class="flex justify-between items-center gap-3">
+        <span class="w-2/5 text-left">${esc(m.home)}</span>
+        <span class="broadcast-score whitespace-nowrap">
+          ${displayScore}
+        </span>
+        <span class="w-2/5 text-right">${esc(m.away)}</span>
+      </div>
+    `;
+
+    $('featuredMeta').textContent =
+      (liveNow ? 'LIVE · ' : completed ? 'RESULT · ' : 'KICKOFF · ') +
+      (m.meta || 'Time unavailable');
   }
   function showStatus(text){$('feedStatus').textContent=text;$('feedChecked').textContent=lastChecked?`· Checked ${lastChecked.toLocaleTimeString()}`:'';}
   async function refreshScores(){
