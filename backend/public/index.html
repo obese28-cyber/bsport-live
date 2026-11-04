@@ -461,5 +461,44 @@ async function toggleBsportMusic() {
   }
 }
 </script>
+<!-- BSPORT AUTOMATIC BROADCAST MUSIC -->
+<audio id="bsportAutoMusic" loop preload="auto">
+  <source src="/assets/bsport-music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+(function () {
+  const music = document.getElementById("bsportAutoMusic");
+  music.volume = 0.25;
+
+  const originalOBSMode = window.toggleOBSMode;
+
+  window.toggleOBSMode = async function () {
+    if (typeof originalOBSMode === "function") {
+      originalOBSMode();
+    } else {
+      document.getElementById("mainBody")
+        .classList.toggle("obs-mode");
+    }
+
+    const broadcasting =
+      document.getElementById("mainBody")
+        .classList.contains("obs-mode");
+
+    if (broadcasting) {
+      try {
+        await music.play();
+        console.log("BSPORT broadcast music started");
+      } catch (error) {
+        console.warn("Audio playback was blocked:", error);
+        alert("Music could not start. Check browser audio permissions.");
+      }
+    } else {
+      music.pause();
+      music.currentTime = 0;
+    }
+  };
+})();
+</script>
 </body>
 </html>
