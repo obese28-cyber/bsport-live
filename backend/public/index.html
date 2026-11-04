@@ -1,10 +1,329 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071124"><title>BSPORT LIVE | Sports Center</title><link rel="stylesheet" href="/style.css"></head><body>
-<header class="mast"><div class="brand"><div class="mark">B<span>★</span></div><div><strong>BSPORT</strong><small>LIVE SPORTS NETWORK</small></div></div><div class="onair"><span class="pulse"></span> SPORTS CENTER</div></header><div class="redline"></div>
-<nav><button class="active" data-tab="all">ALL SPORTS</button><button data-tab="basketball">🏀 NBA</button><button data-tab="football">⚽ FOOTBALL</button><button data-tab="standings">🏆 TABLE</button></nav>
-<main><section class="hero"><div class="hero-copy"><div class="eyebrow">BSPORT LIVE <span class="dot">●</span> SPORTS BROADCAST STUDIO</div><h1>EVERY GAME.<br><em>EVERY MOMENT.</em></h1><p>Real scores. Big moments. One sports universe.</p><div class="controls"><label for="date">MATCH DATE</label><input type="date" id="date"><button id="refresh">↻ Refresh</button></div><div id="state" class="state">Connecting to sports feed…</div></div><div class="hero-graphic" aria-hidden="true"><div class="orbit ring1"></div><div class="orbit ring2"></div><div class="stadium-light"></div><div class="giant-ball">◉</div><div class="hero-no">SPORTS<br>24/7</div></div></section>
-<section class="spotlight panel" id="spotlight"><div class="sectionhead"><h2>★ MATCH SPOTLIGHT</h2><b>FEATURED GAME</b></div><div id="spotlight-body" class="spotlight-body"><div class="empty">Preparing today's featured match…</div></div></section>
-<section id="basketball" class="panel"><div class="sectionhead"><h2>🏀 BASKETBALL</h2><b>NBA & MORE</b></div><div id="basketball-cards" class="cards"><div class="empty">Loading basketball games…</div></div></section>
-<section id="football" class="panel"><div class="sectionhead"><h2>⚽ FOOTBALL</h2><b>EUROPEAN LEAGUES & MORE</b></div><div id="football-cards" class="cards"><div class="empty">Loading football fixtures…</div></div></section>
-<section class="panel" id="history"><div class="sectionhead"><h2>📖 THE SPORTS VAULT</h2><b>HISTORY • TRIVIA • FAN TALK</b></div><div class="vault"><div class="vault-kicker">BEYOND THE SCORE <span>✦</span> DID YOU KNOW?</div><div id="story-title" class="vault-title">Great moments in sports</div><p id="story-body"></p><div class="fan-question" id="fan-question"></div><a id="story-source" target="_blank" rel="noopener noreferrer">READ SOURCE ↗</a><div class="vault-counter"><span id="story-counter">01 / 05</span><span>ROTATES AUTOMATICALLY</span></div></div></section>
-<section id="standings" class="panel"><div class="sectionhead"><h2>🏆 PREMIER LEAGUE</h2><b>STANDINGS</b></div><div id="table" class="table-wrap"><div class="empty">Loading league table…</div></div></section>
-</main><div class="ticker"><strong>BSPORT <span>UPDATE</span></strong><div class="ticker-track"><span class="tickertext">LIVE SCORES ✦ NBA ✦ PREMIER LEAGUE ✦ UEFA CHAMPIONS LEAGUE ✦ FAN TALK ✦ SPORTS HISTORY ✦</span></div></div><footer>© BSPORT LIVE • Scores supplied by SportAPI.ai; not an official league broadcast. <span id="updated"></span></footer><script src="/app.js"></script><script src="/visuals.js"></script></body></html>
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BSPORT LIVE — Real Sports Broadcast Hub</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#070a12',
+                            card: '#0f172a',
+                            cyan: '#00E5FF',
+                            emerald: '#00FF88',
+                            pink: '#FF0055',
+                            gold: '#FFD700'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* 9:16 TikTok Vertical Canvas Container */
+        .tiktok-canvas {
+            width: 100%;
+            max-width: 450px;
+            height: 800px;
+            aspect-ratio: 9 / 16;
+            background: radial-gradient(circle at top, #0f172a 0%, #070a12 100%);
+            border: 2px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+        }
+
+        /* Clean mode when embedded in OBS */
+        .obs-mode .tiktok-canvas {
+            max-width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        .obs-mode .studio-header,
+        .obs-mode .studio-controls {
+            display: none !important;
+        }
+
+        /* TikTok UI Safe Zone Guide Overlay */
+        .safe-zone-overlay {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            border: 2px dashed rgba(255, 0, 85, 0.3);
+            display: none;
+        }
+        .show-safe-zone .safe-zone-overlay {
+            display: block;
+        }
+
+        /* Glass Panel Formatting */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Rotating Ticker */
+        @keyframes tickerSlow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-ticker-fast {
+            display: flex;
+            width: 200%;
+            animation: tickerSlow 22s linear infinite;
+        }
+
+        /* Highlight Alert Banner Animation */
+        @keyframes alertSlide {
+            0% { transform: translateY(-100%) scale(0.9); opacity: 0; }
+            15% { transform: translateY(0) scale(1); opacity: 1; }
+            85% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100%) scale(0.9); opacity: 0; }
+        }
+        .highlight-popup-active {
+            animation: alertSlide 4.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Glow effects for highlight cards */
+        .glow-gold {
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
+            border-color: rgba(0, 229, 255, 0.4);
+        }
+
+        /* Floating Live Stream Reactions */
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.3); opacity: 0; }
+        }
+        .floating-heart {
+            position: absolute;
+            animation: floatUp 2.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar for Vertical Lists */
+        .vertical-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .vertical-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 255, 0.3);
+            border-radius: 4px;
+        }
+    </style>
+<style>\n/* Photographic vertical live broadcast design. Preserve the uploaded studio composition. */
+.tiktok-canvas {background-image:linear-gradient(180deg,rgba(3,7,18,.55) 0%,rgba(3,7,18,.32) 45%,rgba(3,7,18,.83) 100%),url('/assets/bg-01.png');background-position:center;background-size:cover;transition:background-image .7s ease;}
+.obs-mode .tiktok-canvas {width:100vw;max-width:100vw;height:100dvh;aspect-ratio:auto;}
+#dynamicViewContainer {min-height:0;overscroll-behavior:contain;scrollbar-width:thin;}
+.broadcast-photo {background-size:cover;background-position:center;position:relative;isolation:isolate;}
+.broadcast-photo:before {content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,7,18,.78),rgba(3,7,18,.38));z-index:-1;pointer-events:none;}
+.broadcast-score {font-size:clamp(23px,5vw,34px);font-weight:900;letter-spacing:-1px;text-shadow:0 2px 12px #000;}
+.glass-card {background:rgba(8,17,33,.79);}
+@media(max-width:480px){body{padding:0!important}.studio-header{border-radius:0;margin-bottom:0}.tiktok-canvas{height:100dvh;min-height:650px;max-width:100vw;border-radius:0;border:0}.obs-mode .tiktok-canvas{min-height:0}}
+@media(prefers-reduced-motion:reduce){.animate-ticker-fast{animation:none}}
+</style></head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-6 bg-slate-950" id="mainBody">
+<!-- TOP STUDIO TOOLBAR (HIDDEN IN OBS MODE) -->
+<header class="studio-header w-full max-w-4xl mb-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-emerald-400 to-pink-500 flex items-center justify-center text-black font-black text-lg">
+                B★
+            </div>
+<div>
+<h1 class="text-sm font-extrabold text-white flex items-center gap-2">
+                    BSPORT LIVE <span class="text-[10px] bg-pink-500/20 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded-full uppercase">TikTok 9:16 Mode</span>
+</h1>
+<p class="text-[11px] text-gray-400">Vertical Stream Studio • Auto-Rotation &amp; Player Action Highlights</p>
+</div>
+</div>
+<!-- Broadcast Quick Controls -->
+<div class="flex items-center gap-2">
+<button class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40 transition flex items-center gap-1.5 font-bold" onclick="refreshScores()">↻ Refresh scores</button>
+<button class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-300 px-3 py-1.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5" id="btnSafeZone" onclick="toggleSafeZone()">
+<i class="fa-solid fa-border-top-left"></i> Safe Zone Overlay
+            </button>
+<button class="text-xs bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20" onclick="toggleOBSMode()">
+<i class="fa-solid fa-desktop"></i> OBS Stream Mode
+            </button>
+</div>
+</header>
+<!-- TIKTOK 9:16 STREAM CANVAS -->
+<main class="tiktok-canvas flex flex-col justify-between shadow-2xl relative" id="streamCanvas">
+<!-- DYNAMIC HIGHLIGHT ACTION ALERT POPUP -->
+
+<!-- TIKTOK UI SAFE ZONE HIGHLIGHT -->
+<div class="safe-zone-overlay">
+<div class="absolute top-3 left-3 bg-red-500/30 text-red-300 text-[10px] font-mono px-2 py-0.5 rounded">TikTok Host Top Zone</div>
+<div class="absolute right-2 top-1/3 bottom-1/4 w-12 border-l border-dashed border-red-500/40 flex items-center justify-center">
+<span class="text-[9px] text-red-400 -rotate-90">Like/Gift Zone</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-44 border-t border-dashed border-red-500/40 bg-red-500/10 flex items-center justify-center">
+<span class="text-[10px] text-red-300 font-mono">TikTok Comment Overlay Zone</span>
+</div>
+<div class="text-[10px] text-cyan-300/90 px-1 font-mono"><span id="feedStatus">Connecting to SportAPI…</span> <span class="text-gray-400" id="feedChecked"></span></div></div>
+<!-- SECTION 1: TOP STREAM HEADER & LIVE SPOTLIGHT WITH PLAYER ACTION GRAPHIC -->
+<div class="z-20 p-4 space-y-3 bg-gradient-to-b from-slate-950 via-slate-950/90 to-transparent pb-4">
+<!-- TOP BADGE BAR -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white font-extrabold text-[11px] tracking-wider uppercase animate-pulse shadow-md shadow-red-600/30">SCORES</span>
+<span class="text-xs font-black text-cyan-400 tracking-wider">BSPORT NETWORK</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] font-mono text-gray-400 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800">
+<i class="fa-solid fa-clock text-cyan-400"></i>
+<span id="currentTime">10:03:02 PM</span>
+</div>
+</div>
+<!-- FEATURED MATCH WITH STAR PLAYER ACTION CARDS -->
+<div class="glass-card rounded-2xl p-3 border border-cyan-500/30 shadow-lg relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-blue-950/40"><div class="flex items-center justify-between text-[10px] font-black tracking-wider mb-3"><span class="text-cyan-300">★ FEATURED MATCH · VERIFIED FEED</span><span class="text-gray-300" id="featuredStatus">CONNECTING</span></div><div class="text-center text-sm font-bold text-white py-3" id="featuredMatch">Loading real match data…</div><div class="text-center text-[10px] text-gray-300 pt-2" id="featuredMeta">SportAPI.ai · results subject to provider updates</div></div>
+<!-- ROTATION PROGRESS BAR & SELECTOR -->
+<div class="space-y-1 pt-1">
+<div class="flex items-center justify-between text-[10px] font-bold text-gray-400">
+<span class="text-cyan-400 uppercase tracking-wider flex items-center gap-1" id="rotationTitle">
+<i class="fa-solid fa-arrows-rotate animate-spin text-[9px]"></i> VIEW: NBA SCORES
+                    </span>
+<span class="font-mono text-gray-500" id="rotationTimer">Auto switching (8s)</span>
+</div>
+<div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-400 w-0 transition-all duration-100 ease-linear" id="progressBar"></div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: ROTATING BROADCAST VIEWS (DYNAMIC CONTENT WITH PLAYER IMAGES) -->
+<div class="flex-grow px-4 overflow-y-auto vertical-scroll z-10 space-y-3 py-1" id="dynamicViewContainer">
+<!-- Dynamic JS Injection of Views -->
+</div>
+<!-- SECTION 3: STREAM TICKER & REACTION OVERLAY -->
+<div class="z-20 bg-slate-950/95 border-t border-slate-800 p-3 space-y-2">
+<!-- LIVE TICKER BAR -->
+<div class="bg-slate-900 border border-slate-800 rounded-xl py-1.5 overflow-hidden text-[11px]">
+<div class="animate-ticker-fast font-semibold text-gray-300"><span class="mx-3" id="liveTicker">Loading real NBA and football scores from SportAPI.ai…</span></div>
+</div>
+<!-- STREAM CONTROLS & MANUAL ROTATION TABS -->
+<div class="studio-controls flex items-center justify-between gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-[10px]">
+<button class="tab-btn px-2 py-1 rounded-lg font-bold text-cyan-400 bg-slate-800" id="tab-0" onclick="setRotationView(0)">🏀 NBA</button>
+<button class="tab-btn px-2 py-1 rounded-lg font-bold text-gray-400" id="tab-1" onclick="setRotationView(1)">⭐ Performers</button>
+<button class="tab-btn px-2 py-1 rounded-lg font-bold text-gray-400" id="tab-2" onclick="setRotationView(2)">⚽ Football</button>
+<button class="tab-btn px-2 py-1 rounded-lg font-bold text-gray-400" id="tab-3" onclick="setRotationView(3)">🏆 Table</button>
+<button class="px-2 py-1 rounded-lg font-bold text-gray-400 hover:text-white bg-slate-800/50" id="btnPause" onclick="toggleAutoRotation()">
+<i class="fa-solid fa-pause"></i>
+</button>
+</div>
+<p class="text-[9px] text-center text-gray-500 font-mono">BSPORT LIVE · REAL MATCH DATA · ILLUSTRATIVE ATHLETE PHOTOGRAPHY</p>
+</div>
+<!-- FLOATING REACTION CONTAINER -->
+
+</main>
+<!-- SCRIPT LOGIC -->
+
+<script>(() => {
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const backgrounds=Array.from({length:35},(_,i)=>`/assets/bg-${String(i+1).padStart(2,'0')}.png`);
+  let sports={basketball:[],football:[],standings:[]};
+  let view=0,playing=true,seconds=0,photoIndex=0,featuredIndex=0,lastChecked=null;
+  const INTERVAL=8000, REFRESH_MS=10*60*1000;
+  const dateString=()=>new Date().toISOString().slice(0,10);
+  async function fetchKind(kind){
+    const response=await fetch(`/api/${kind}?date=${dateString()}`,{cache:'no-store'});
+    const body=await response.json();
+    if(!response.ok)throw new Error(body.error||`HTTP ${response.status}`);
+    return Array.isArray(body.data)?body.data:[];
+  }
+  const priority=['NBA','UEFA Champions League','Premier League','La Liga','Spanish La Liga','Bundesliga','Serie A'];
+  const score=x=>x===null||x===undefined?'–':esc(x);
+  const matchFootball=g=>({league:g.league_name||'Football',home:g.home_team||'Home',away:g.away_team||'Away',hs:g.home_score,as:g.away_score,status:g.status||'Scheduled',live:g.status==='LIVE',sport:'football',meta:g.datetime||g.kickoff_utc||''});
+  const matchNBA=g=>({league:g.league?.name||'Basketball',home:g.home?.name||'Home',away:g.away?.name||'Away',hs:g.home?.score,as:g.away?.score,status:g.status||'Scheduled',live:!!g.live,sport:'basketball',meta:g.start?new Date(g.start).toLocaleString():''});
+  function allMatches(){
+    const nba=sports.basketball.filter(g=>g.league?.name==='NBA').map(matchNBA);
+    const foot=sports.football.map(matchFootball);
+    return [...nba,...foot].sort((a,b)=>Number(b.live)-Number(a.live)||Number(priority.includes(b.league))-Number(priority.includes(a.league)));
+  }
+  function fixture(m,i){const bg=backgrounds[(i*3+photoIndex)%backgrounds.length];return `<div class="glass-card rounded-2xl p-3 mb-2 relative overflow-hidden broadcast-photo" style="background-image:url('${bg}')"><div class="text-[10px] flex justify-between gap-2 text-cyan-200 font-bold mb-2"><span>${esc(m.league)}</span><span class="${m.live?'text-emerald-300':'text-gray-200'}">${m.live?'● LIVE ':''}${esc(m.status)}</span></div><div class="flex items-center justify-between gap-2"><div class="w-[36%] text-sm font-extrabold leading-tight">${esc(m.home)}</div><div class="broadcast-score text-center whitespace-nowrap">${score(m.hs)} <span class="text-cyan-300">:</span> ${score(m.as)}</div><div class="w-[36%] text-sm font-extrabold text-right leading-tight">${esc(m.away)}</div></div><div class="text-[9px] text-gray-200 mt-2">${esc(m.meta)}</div></div>`;}
+  function updateFeatured(){
+    const matches=allMatches(); const m=matches[featuredIndex%Math.max(matches.length,1)];
+    if(!m){$('featuredStatus').textContent='NO GAMES';$('featuredMatch').textContent='No matches available for this date';return;}
+    $('featuredStatus').textContent=m.live?'● LIVE':m.status;
+    $('featuredMatch').innerHTML=`<div class="text-[10px] text-cyan-300 uppercase mb-2">${esc(m.league)}</div><div class="flex justify-between items-center gap-3"><span class="w-2/5 text-left">${esc(m.home)}</span><span class="broadcast-score whitespace-nowrap">${score(m.hs)} : ${score(m.as)}</span><span class="w-2/5 text-right">${esc(m.away)}</span></div>`;
+    $('featuredMeta').textContent=m.meta||'Scores supplied by SportAPI.ai';
+  }
+  function showStatus(text){$('feedStatus').textContent=text;$('feedChecked').textContent=lastChecked?`· Checked ${lastChecked.toLocaleTimeString()}`:'';}
+  async function refreshScores(){
+    showStatus('Checking live sports feeds…');
+    const names=['basketball','football','standings'];
+    const outcomes=await Promise.allSettled(names.map(fetchKind));
+    let success=0;
+    outcomes.forEach((r,i)=>{if(r.status==='fulfilled'){sports[names[i]]=r.value;success++;}});
+    lastChecked=new Date();
+    showStatus(`${success}/3 feeds connected · Checks every 10 min`);
+    updateFeatured();renderCurrentView();updateTicker();
+    if(success===0)$('feedStatus').textContent='Sports feeds unavailable — verify Render and API key';
+  }
+  window.refreshScores=refreshScores;
+  function updateTicker(){
+    const xs=allMatches().slice(0,5);
+    const text=xs.length?xs.map(m=>`${m.league}: ${m.home} ${m.hs??'–'} - ${m.as??'–'} ${m.away} (${m.status})`).join('  ✦  '):'BSPORT LIVE · Awaiting sports feed · Sports history and standings';
+    $('liveTicker').textContent=text+'  ✦  '+text;
+  }
+  function renderCurrentView(){
+    const tabs=document.querySelectorAll('.tab-btn');
+    tabs.forEach((tab,i)=>tab.className=`tab-btn px-2 py-1 rounded-lg font-bold ${i===view?'text-cyan-400 bg-slate-800 border border-cyan-500/30':'text-gray-400'}`);
+    let title='',html='';
+    if(view===0){
+      title='🏀 NBA SCORES';let games=sports.basketball.filter(g=>g.league?.name==='NBA').map(matchNBA);html=games.length?games.slice(0,8).map(fixture).join(''):'<div class="glass-card p-5 rounded-xl">No NBA games returned for this date.</div>';
+    }else if(view===1){
+      title='★ FEATURED MATCHES';let games=allMatches();html=games.length?games.slice(0,6).map(fixture).join(''):'<div class="glass-card p-5 rounded-xl">No featured matches.</div>';
+    }else if(view===2){
+      title='⚽ FOOTBALL SCORES';let games=sports.football.map(matchFootball).sort((a,b)=>Number(b.live)-Number(a.live)||Number(priority.includes(b.league))-Number(priority.includes(a.league)));html=games.length?games.slice(0,8).map(fixture).join(''):'<div class="glass-card p-5 rounded-xl">No football matches returned for this date.</div>';
+    }else{
+      title='🏆 PREMIER LEAGUE TABLE';let table=sports.standings;html=table.length?`<div class="glass-card rounded-xl p-2"><table class="w-full text-left text-xs"><thead><tr class="text-cyan-300"><th class="p-2">#</th><th>Club</th><th>P</th><th>Pts</th></tr></thead><tbody>${table.slice(0,20).map(r=>`<tr class="border-t border-slate-700/50"><td class="p-2">${esc(r.position)}</td><td>${esc(r.team?.name)}</td><td>${esc(r.played)}</td><td class="text-amber-300 font-bold">${esc(r.points)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="glass-card p-5 rounded-xl">No standings returned.</div>';
+    }
+    $('rotationTitle').textContent=title;
+    $('dynamicViewContainer').innerHTML=html;
+    $('dynamicViewContainer').scrollTop=0;
+  }
+  window.setRotationView=i=>{view=i;seconds=0;renderCurrentView();};
+  window.toggleAutoRotation=()=>{playing=!playing;$('btnPause').innerHTML=playing?'<i class="fa-solid fa-pause"></i>':'<i class="fa-solid fa-play"></i>';$('rotationTimer').textContent=playing?'Auto switching (8s)':'Paused';};
+  window.toggleSafeZone=()=>{$('mainBody').classList.toggle('show-safe-zone');$('btnSafeZone').classList.toggle('text-red-400');};
+  window.toggleOBSMode=()=>{$('mainBody').classList.toggle('obs-mode');};
+  function rotatePhoto(){photoIndex=(photoIndex+1)%backgrounds.length;const path=backgrounds[photoIndex];const img=new Image();img.onload=()=>{$('streamCanvas').style.backgroundImage=`linear-gradient(180deg,rgba(3,7,18,.55),rgba(3,7,18,.25) 45%,rgba(3,7,18,.83)),url('${path}')`;};img.src=path; featuredIndex++;updateFeatured();renderCurrentView();}
+  setInterval(()=>{if(document.hidden||!playing)return;seconds+=100;$('progressBar').style.width=`${Math.min(seconds/INTERVAL*100,100)}%`;if(seconds>=INTERVAL){seconds=0;view=(view+1)%4;renderCurrentView();}},100);
+  setInterval(()=>{if(!document.hidden)rotatePhoto()},14000);
+  setInterval(()=>{$('currentTime').textContent=new Date().toLocaleTimeString();},1000);
+  setInterval(()=>{if(!document.hidden)refreshScores()},REFRESH_MS);
+  updateFeatured();renderCurrentView();refreshScores();
+})();</script></body>
+</html>
