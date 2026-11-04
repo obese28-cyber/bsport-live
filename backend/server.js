@@ -6,7 +6,7 @@ const ROOT=join(process.cwd(),'public');
 const cache=new Map();
 const ttl={football:60000,basketball:60000,standings:900000};
 const isoDay=(d)=>d.toISOString().slice(0,10);
-const json=(res,status,obj)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'same-origin'});res.end(JSON.stringify(obj));};
+const json=(res,status,obj)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});res.end(JSON.stringify(obj));};
 async function proxy(res,kind,date){
  if(!KEY)return json(res,503,{error:'SPORTAPI_KEY is not configured on the server.'});
  const target=kind==='football'?`/fixtures/date/${date}`:kind==='basketball'?`/basketball/games/date/${date}?tz=America/Los_Angeles&league=nba`:'/standings/24';
@@ -26,5 +26,5 @@ http.createServer(async(req,res)=>{
  }
  const p=url.pathname==='/'?'/index.html':url.pathname;
  const file=normalize(join(ROOT,p));if(!file.startsWith(ROOT+'/'))return json(res,403,{error:'Forbidden'});
- try{const bytes=await readFile(file);const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml'}[extname(file)]||'application/octet-stream';res.writeHead(200,{'Content-Type':mime,'X-Content-Type-Options':'nosniff'});res.end(bytes);}catch{json(res,404,{error:'Not found'});}
+ try{const bytes=await readFile(file);const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.mp3':'audio/mpeg','.ico':'image/x-icon','.woff2':'font/woff2','.json':'application/json; charset=utf-8'}[extname(file)]||'application/octet-stream';res.writeHead(200,{'Content-Type':mime,'X-Content-Type-Options':'nosniff'});res.end(bytes);}catch{json(res,404,{error:'Not found'});}
 }).listen(PORT,'0.0.0.0',()=>console.log(`BSPORT listening on ${PORT}`));
