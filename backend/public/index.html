@@ -420,47 +420,6 @@
     }, 7000);
 })();
 </script>
-<!-- BSPORT BROADCAST MUSIC -->
-<div id="bsportMusicControls" style="display:none!important"
-     style="position:fixed;bottom:12px;left:12px;
-     z-index:1000;background:#071525ee;
-     padding:10px;border-radius:12px;
-     border:1px solid #00e5ff;">
-  <button id="musicToggle"
-          type="button"
-          onclick="toggleBsportMusic()"
-          style="background:#00e5ff;color:#00121c;
-          border:none;border-radius:8px;
-          padding:9px 14px;font-weight:bold;cursor:pointer;">
-    ▶ Music On
-  </button>
-</div>
-
-<audio id="bsportMusic" loop preload="none">
-  <source src="/assets/bsport-music.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-const bsportMusic = document.getElementById("bsportMusic");
-bsportMusic.volume = 0.15;
-
-async function toggleBsportMusic() {
-  const button = document.getElementById("musicToggle");
-
-  if (bsportMusic.paused) {
-    try {
-      await bsportMusic.play();
-      button.textContent = "⏸ Music Off";
-    } catch (error) {
-      button.textContent = "▶ Music On";
-      console.error("Music playback unavailable:", error);
-    }
-  } else {
-    bsportMusic.pause();
-    button.textContent = "▶ Music On";
-  }
-}
-</script>
 <!-- BSPORT AUTOMATIC BROADCAST MUSIC -->
 <audio id="bsportAutoMusic" loop preload="auto">
   <source src="/assets/bsport-music.mp3" type="audio/mpeg">
