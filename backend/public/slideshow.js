@@ -26,6 +26,7 @@ const hero=document.querySelector('.hero-card');
 if(!hero)return;
 const photos=[document.querySelector('.hero-nba'),document.querySelector('.hero-football')];
 const originals=photos.map(x=>x?.src);
+const secondPeople=['Erling Haaland','Stephen Curry','Vinícius Júnior','Son Heung-min','Mohamed Salah','Diego Maradona'];
 const controls=document.createElement('div');
 controls.className='slide-controls';
 controls.innerHTML='<strong id="slideName">BSPORT ROTATION</strong><div><button id="slidePrev">◀</button><button id="slidePause">Ⅱ</button><button id="slideNext">▶</button></div><small id="slideCredit">Illustrative imagery</small><div class="slide-track"><div id="slideProgress"></div></div>';
@@ -84,27 +85,24 @@ function display(){
   $('heroStatus').className='match-status';
   $('heroMeta').textContent=$('storyTitle')?.textContent||'Sports history';
  }
- const nba=s.key==='nba';
- photos.forEach((p,i)=>{
-  if(!p)return;
-  p.src=originals[i];
-  p.style.display=(nba?i===0:i===1)?'':'none';
- });
+
+ const names=[s.person,secondPeople[index]];
+ const current=index;
  const credit=$('slideCredit');
- credit.textContent='Illustrative athlete image';
- if(s.key!=='world'){
-  const current=index;
-  portrait(s.person).then(p=>{
-   if(current!==index||!p)return;
-   const img=photos[nba?0:1];
-   if(img){img.src=p.url;img.alt=s.person+' · thematic photograph';}
-   credit.replaceChildren();
-   const a=document.createElement('a');
-   a.href=p.source;a.target='_blank';a.rel='noopener';
-   a.textContent=s.person+' · '+p.license;
-   credit.append(a);
+ credit.textContent=names.join(' · ')+' · Illustrative graphics';
+ photos.forEach((img,i)=>{
+  if(!img)return;
+  const name=names[i];
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="300" height="500"><rect width="300" height="500" fill="'+(i?'#722146':'#164d89')+'"/><circle cx="150" cy="150" r="65" fill="#b5d4ed"/><path d="M20 500 Q0 250 150 265 Q300 250 280 500" fill="#e5eaf5"/><text x="150" y="440" font-size="20" text-anchor="middle" fill="white">'+name+'</text></svg>';
+  img.src='data:image/svg+xml,'+encodeURIComponent(svg);
+  img.style.display='block';
+  img.alt=name+' illustrative graphic';
+  portrait(name).then(photo=>{
+   if(current!==index||!photo)return;
+   img.src=photo.url;
+   img.alt=name+' Wikimedia photograph';
   });
- }
+ });
  $('tickerText').textContent=(matches.length?matches.slice(0,5).map(m=>m.league+' · '+m.home+' '+value(m.hs)+'–'+value(m.as)+' '+m.away+' · '+m.status).join(' ✦ '):s.name+' · No fixtures available')+' ✦ BSPORT LIVE';
 }
 function move(n){index=(index+n+slides.length)%slides.length;display();}
