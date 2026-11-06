@@ -1,0 +1,4 @@
+{
+  "stories": [],
+  "_instructions": "Optional editor-curated current news. Each story must have headline, summary, source, date (YYYY-MM-DD), status (CONFIRMED/REPORTED/RUMOR/OPINION), url (https), and optionally prompt. Stories older than 14 days are omitted. Empty feed displays evergreen fan debates instead. Never publish unsourced accusations."
+}
